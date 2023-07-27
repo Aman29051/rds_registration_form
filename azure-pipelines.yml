@@ -24,19 +24,4 @@ steps:
       archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
       replaceExistingArchive: true
 
-  - script: |
-      python.exe -m pip install --upgrade pip
-    displayName: 'Update pip'
 
-  - powershell: |
-      Expand-Archive -Path $(Build.ArtifactStagingDirectory)/deploy.zip -DestinationPath $(Build.ArtifactStagingDirectory)/unzipped_artifacts
-    displayName: 'Unzip Artifacts'
-
-  - task: S3Upload@1
-    inputs:
-      awsCredentials: 'Aws_RDS'
-      regionName: 'us-east-1'
-      bucketName: 'nodejs-rds-app-winjit'
-      sourceFolder: '$(Build.ArtifactStagingDirectory)/unzipped_artifacts'
-      globExpressions: '**'
-      createBucket: true
