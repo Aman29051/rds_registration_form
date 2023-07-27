@@ -34,6 +34,6 @@ steps:
     awsCredentials: 'Aws_RDS'
     regionName: 'us-east-1'
     bucketName: 'nodejs-rds-app-winjit'
-    sourceFolder: '$(Build.ArtifactStagingDirectory)/deploy.zip'
-    globExpressions: '**'
+    sourceFolder: '$(Build.ArtifactStagingDirectory)'
+    globExpressions: 'deploy.zip'
     createBucket: true
