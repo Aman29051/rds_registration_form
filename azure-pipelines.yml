@@ -20,3 +20,20 @@ steps:
     npm install
     node app.js
   displayName: 'npm install and build'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
+    replaceExistingArchive: true
+
+- task: S3Upload@1
+  inputs:
+    awsCredentials: 'Aws_RDS'
+    regionName: 'us-east-1'
+    bucketName: 'nodejs-rds-app-winjit'
+    sourceFolder: '$(Build.ArtifactStagingDirectory)/deploy.zip'
+    globExpressions: '**'
+    createBucket: true
