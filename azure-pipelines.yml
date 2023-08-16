@@ -1,44 +1,55 @@
 trigger:
   - main
 
+variables:
+  uiSource: 'src'
+
 pool:
   name: Default
-  agent: cicd-project-agent
-
-variables:
-  buildConfiguration: 'release'
+  agent: cicd-project-agent         #Run in powershell cd agent :: .\run.cmd --runAsService
 
 steps:
-  - task: aloisdeniel.flutter.flutter-install.FlutterInstall@0
-    displayName: 'Flutter Install'
-
-  - task: aloisdeniel.flutter.flutter-command.FlutterCommand@0
-    displayName: 'Flutter Enable Web'
+  - task: NodeTool@0
     inputs:
-      arguments: 'config --enable-web'
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
 
-  - task: aloisdeniel.flutter.flutter-command.FlutterCommand@0
-    displayName: 'Flutter Run Build Web'
+  - task: CmdLine@2
     inputs:
-      arguments: 'build web'
+      script: |
+        npm install
+
+  - task: CmdLine@2
+    inputs:
+      script: |
+        npm run build
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/build/web'
+      rootFolderOrFile: '$(Build.SourcesDirectory)/build'
       includeRootFolder: false
       archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/webapp.zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
       replaceExistingArchive: true
+  
+  - script: |
+      python.exe -m pip install --upgrade pip
+    displayName: 'Update pip'
 
   - powershell: |
-      Expand-Archive -Path $(Build.ArtifactStagingDirectory)/webapp.zip -DestinationPath $(Build.ArtifactStagingDirectory)/unzipped_artifacts
+      Expand-Archive -Path $(Build.ArtifactStagingDirectory)/deploy.zip -DestinationPath $(Build.ArtifactStagingDirectory)/unzipped_artifacts
     displayName: 'Unzip Artifacts'
+
+  # - script: |
+  #     aws s3 sync $(Build.ArtifactStagingDirectory)/unzipped_artifacts s3://azure-cicd-connection-winjit/
+  #   displayName: 'Upload Unzipped Artifacts'
 
   - task: S3Upload@1
     inputs:
-      awsCredentials: 'aws-flutter-deploy'
+      awsCredentials: 'aws_iam_user'
       regionName: 'us-east-1'
-      bucketName: 'Flutter-Faizan'
+      bucketName: 'azure-cicd-connection-winjit'
       sourceFolder: '$(Build.ArtifactStagingDirectory)/unzipped_artifacts'
       globExpressions: '**'
       createBucket: true
+
