@@ -24,9 +24,15 @@ steps:
       script: |
         npm run build
 
+  # - task: CopyFiles@2
+  #   displayName: 'Copy Files'
+  #   inputs:
+  #     SourceFolder: '$(Build.SourcesDirectory)/build/web'
+  #     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/build'
+      rootFolderOrFile: '$(Build.SourcesDirectory)/build/web'
       includeRootFolder: false
       archiveType: 'zip'
       archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
