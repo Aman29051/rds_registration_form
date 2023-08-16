@@ -5,38 +5,40 @@ pool:
   name: Default
   agent: cicd-project-agent
 
-steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '18.x'
-    displayName: 'Install Node.js'
+variables:
+  buildConfiguration: 'release'
 
-  - script: |
-      npm install
-      node app.js
-    displayName: 'npm install and run'
+steps:
+  - task: aloisdeniel.flutter.flutter-install.FlutterInstall@0
+    displayName: 'Flutter Install'
+
+  - task: aloisdeniel.flutter.flutter-command.FlutterCommand@0
+    displayName: 'Flutter Enable Web'
+    inputs:
+      arguments: 'config --enable-web'
+
+  - task: aloisdeniel.flutter.flutter-command.FlutterCommand@0
+    displayName: 'Flutter Run Build Web'
+    inputs:
+      arguments: 'build web'
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.BinariesDirectory)'
-      includeRootFolder: true
+      rootFolderOrFile: '$(Build.SourcesDirectory)/build/web'
+      includeRootFolder: false
       archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/webapp.zip'
       replaceExistingArchive: true
 
-  # - script: |
-  #     python.exe -m pip install --upgrade pip
-  #   displayName: 'Update pip'
+  - powershell: |
+      Expand-Archive -Path $(Build.ArtifactStagingDirectory)/webapp.zip -DestinationPath $(Build.ArtifactStagingDirectory)/unzipped_artifacts
+    displayName: 'Unzip Artifacts'
 
-  # - powershell: |
-  #     Expand-Archive -Path $(Build.ArtifactStagingDirectory)/deploy.zip -DestinationPath $(Build.ArtifactStagingDirectory)/unzipped_artifacts
-  #   displayName: 'Unzip Artifacts'
-
-  # - task: S3Upload@1
-  #   inputs:
-  #     awsCredentials: 'Aws_RDS'
-  #     regionName: 'us-east-1'
-  #     bucketName: 'nodejs-rds-app-winjit'
-  #     sourceFolder: '$(Build.ArtifactStagingDirectory)/unzipped_artifacts'
-  #     globExpressions: '**'
-  #     createBucket: true
+  - task: S3Upload@1
+    inputs:
+      awsCredentials: 'aws-flutter-deploy'
+      regionName: 'us-east-1'
+      bucketName: 'Flutter-Faizan'
+      sourceFolder: '$(Build.ArtifactStagingDirectory)/unzipped_artifacts'
+      globExpressions: '**'
+      createBucket: true
