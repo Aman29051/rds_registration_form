@@ -32,7 +32,7 @@ steps:
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/build/web'
+      rootFolderOrFile: '$(Build.SourcesDirectory)/build'
       includeRootFolder: false
       archiveType: 'zip'
       archiveFile: '$(Build.ArtifactStagingDirectory)/deploy.zip'
