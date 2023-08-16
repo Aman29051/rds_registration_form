@@ -6,7 +6,7 @@ variables:
 
 pool:
   name: Default
-  agent: cicd-project-agent         #Run in powershell cd agent :: .\run.cmd --runAsService
+  agent: cicd-project-agent
 
 steps:
   - task: NodeTool@0
